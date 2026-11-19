@@ -1,10 +1,37 @@
+from contextlib import asynccontextmanager
 from fastapi import Depends, FastAPI
 from sqlalchemy import text
 from sqlalchemy.orm import Session
+from src.utils.db import get_db, engine, Base, SessionLocal
 
-from src.utils.db import get_db
+# 1. Define the Lifespan Context Manager
+@asynccontextmanager
+async def lifespan(app: FastAPI):
 
-app = FastAPI(title="Task Management API")
+    print("APPLICATION STARTING...")
+
+    try:
+        with engine.connect() as connection:
+            connection.execute(text("SELECT 1"))
+
+        print("DATABASE CONNECTED SUCCESSFULLY!")
+
+        Base.metadata.create_all(bind=engine)
+
+    except Exception as e:
+        print("DATABASE CONNECTION FAILED!")
+        print(type(e).__name__)
+        print(str(e))
+        raise
+
+    yield
+
+    print("SERVER SHUTTING DOWN...")
+
+app = FastAPI(
+    title="Task Management API",
+    lifespan=lifespan
+)
 
 @app.get("/")
 def home():

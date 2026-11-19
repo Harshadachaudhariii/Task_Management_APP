@@ -1,28 +1,23 @@
-from dotenv import load_dotenv
 from sqlalchemy import create_engine
 from sqlalchemy.orm import declarative_base, sessionmaker
-import os
-
-load_dotenv()
-DATABASE_URL = os.getenv("DATABASE_URL")
+from src.utils.settings import settings
 
 # ---- Component 2: The Engine (the bridge to MySQL) ----
 engine = create_engine(
-    DATABASE_URL,
+    url = settings.DATABASE_URL,
     pool_pre_ping=True,
     echo=False
                        )
 
-# ---- Component 3: SessionLocal (the desk factory) ----
+# ---- Component 3: Base (the master blueprint for tables) ----
+Base = declarative_base()
+
+# ---- Component 4: SessionLocal (the desk factory) ----
 SessionLocal = sessionmaker(
     bind=engine,
     autocommit=False,
     autoflush=False,
 )
-
-# ---- Component 4: Base (the master blueprint for tables) ----
-Base = declarative_base()
-
 
 # ---- The Office Manager: FastAPI dependency ----
 def get_db():
