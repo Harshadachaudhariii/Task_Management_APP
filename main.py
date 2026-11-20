@@ -1,10 +1,9 @@
-
 from contextlib import asynccontextmanager
 from fastapi import Depends, FastAPI
 from sqlalchemy import text
 from sqlalchemy.orm import Session
 from src.utils.db import get_db, engine, Base
-from src.tasks.models import TaskModel
+from src.tasks.router import task_routes
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -27,6 +26,7 @@ app = FastAPI(
     title="Task Management API",
     lifespan=lifespan
 )
+app.include_router(task_routes)
 
 
 @app.get("/")
