@@ -22,7 +22,8 @@ def get_one_task(task_id:int, db:Session = Depends(get_db)):
 @task_routes.put("/update_task/{task_id}",response_model=TaskResponseSchema, status_code=status.HTTP_201_CREATED)
 def update_task(body:TaskSchema,task_id:int,db:Session = Depends(get_db)):
     return controller.update_task(body,task_id, db)
-
+ 
+ 
 @task_routes.delete("/delete_task/{task_id}",response_model=None, status_code=status.HTTP_204_NO_CONTENT)
 def delete_task(task_id:int, db:Session = Depends(get_db)):
     return controller.delete_task(task_id, db)
