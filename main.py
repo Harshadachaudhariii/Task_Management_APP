@@ -4,6 +4,7 @@ from sqlalchemy import text
 from sqlalchemy.orm import Session
 from src.utils.db import get_db, engine, Base
 from src.tasks.router import task_routes
+from src.user.router import user_routes
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -27,6 +28,7 @@ app = FastAPI(
     lifespan=lifespan
 )
 app.include_router(task_routes)
+app.include_router(user_routes)
 
 
 @app.get("/")
