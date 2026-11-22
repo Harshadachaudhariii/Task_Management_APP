@@ -2,12 +2,14 @@ from src.tasks.dtos import TaskSchema
 from sqlalchemy.orm import Session
 from src.tasks.models import TaskModel
 from fastapi import HTTPException
+from src.user.models import UserModel   
 
-def create_task(body:TaskSchema, db:Session):
+def create_task(body:TaskSchema, db:Session, user:UserModel):
     data = body.model_dump()
     new_task = TaskModel(title=data["title"], 
                          description= data["description"],
-                         is_completed = data["is_completed"])
+                         is_completed = data["is_completed"],
+                         user_id=user.id)
     
     db.add(new_task)
     db.commit()
@@ -15,24 +17,26 @@ def create_task(body:TaskSchema, db:Session):
     return new_task
 
 
-def get_task(db:Session,):
-    tasks = db.query(TaskModel).all()
+def get_task(db:Session, user:UserModel):
+    tasks = db.query(TaskModel).filter(TaskModel.user_id == user.id).all()
     return tasks
 
 
-def get_one_task(task_id : int, db:Session):
-    one_task = db.query(TaskModel).get(task_id)
+def get_one_task(task_id : int, db:Session, user:UserModel):
+    one_task = db.query(TaskModel).filter(TaskModel.id == task_id, TaskModel.user_id == user.id).first()
     if not one_task:
         raise HTTPException(404, detail="Task ID is Incorrect")
     
     
     return one_task
     
-def update_task(body: TaskSchema, task_id: int, db: Session):
+def update_task(body: TaskSchema, task_id: int, db: Session, user: UserModel):
     task = db.get(TaskModel, task_id)
     if not task:
         raise HTTPException(status_code=404, detail="Task ID is incorrect")
 
+    if task.user_id != user.id: 
+        raise HTTPException(status_code=401, detail="You are not authorized to update this task")
     data = body.model_dump()
     for field, value in data.items():
         setattr(task, field, value)
@@ -42,11 +46,13 @@ def update_task(body: TaskSchema, task_id: int, db: Session):
 
     return task
     
-def delete_task(task_id:int, db:Session):
+def delete_task(task_id:int, db:Session, user:UserModel):
     task = db.get(TaskModel, task_id)
     if not task:
         raise HTTPException(status_code=404, detail="Task ID is incorrect")
     
+    if task.user_id != user.id: 
+        raise HTTPException(status_code=401, detail="You are not authorized to delete this task")
     db.delete(task)
     db.commit()
     
