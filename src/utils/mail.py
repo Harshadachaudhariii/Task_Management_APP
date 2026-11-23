@@ -29,4 +29,4 @@ async def send_email(emails: List[EmailStr] ):
 
     fm = FastMail(conf)
     await fm.send_message(message)
-    return {"message": "email has been sent"}
+    print({"message": "email has been sent"})
